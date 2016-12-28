@@ -280,15 +280,18 @@ def downloadSRR(SRXlink):
     page = urllib.urlopen(SRXlink).read()
 
     SRRids = re.findall("SRR[0-9]+", page)
+    DRRids = re.findall("DRR[0-9]+", page)
+    ERXids = re.findall("ERX[0-9]+", page)
+
+    SRRids += DRRids + ERXids
 
     for SRRid in SRRids:
         url = "https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?sp=runinfo&acc="+SRRid+"&retmode=xml"
-        response = requests.get(url)
-        content_type = response.headers['content-type']
-        extension = mimetypes.guess_extension(content_type)
-        if content_type == "geo/text" and extension != ".html":
+        try:
             urllib.urlretrieve(url, '/home/tmhbxx3/scratch/XMLhttp/SRRXMLs/' + SRRid + ".xml")
-    return
+        except:
+            print SRRid
+    return SRRids
 
 
 def getSRR(SRXlink):
