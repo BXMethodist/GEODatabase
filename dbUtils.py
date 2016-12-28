@@ -274,6 +274,22 @@ def updateTableGSM(db, update=True):
     samples = gsmParser(newGSMID)
     return samples
 
+####
+def downloadSRR(SRXlink):
+    ## download GSM meta data from NCBI
+    page = urllib.urlopen(SRXlink).read()
+
+    SRRids = re.findall("SRR[0-9]+", page)
+
+    for SRRid in SRRids:
+        url = "https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?sp=runinfo&acc="+SRRid+"&retmode=xml"
+        response = requests.get(url)
+        content_type = response.headers['content-type']
+        extension = mimetypes.guess_extension(content_type)
+        if content_type == "geo/text" and extension != ".html":
+            urllib.urlretrieve(url, '/home/tmhbxx3/scratch/XMLhttp/SRRXMLs/' + SRRid + ".xml")
+    return
+
 
 def getSRR(SRXlink):
     # get SRR id and SRR ftp download address
@@ -325,7 +341,7 @@ def updateGSMtoSRR(db, update=True, newGSMs=None):
         for row in db.execute("select GSM_ID, SRA from GSM").fetchall()[20:200000]:
             GSM_ID, SRXlink = row
 
-            if len(SRXlink.strip()) == 0:
+            if SRXlink is None or len(SRXlink.strip()) == 0:
                 continue
             SRRinfos = getSRR(SRXlink)
 
